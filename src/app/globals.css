@@ -1,26 +1,265 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --foreground: #172033;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-mono: monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--background);
 }
 
 body {
+  margin: 0;
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* =========================
+   Product Explorer
+   ========================= */
+
+.product-page {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 0 50px;
+}
+
+/* =========================
+   Header
+   ========================= */
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  margin: 0 0 6px;
+  font-size: 30px;
+  font-weight: 700;
+  color: #172033;
+}
+
+.page-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 15px;
+}
+
+/* =========================
+   Form
+   ========================= */
+
+.product-page form {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 22px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 15px rgba(15, 23, 42, 0.05);
+}
+
+.product-page label {
+  display: block;
+  margin-bottom: 7px;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.product-page input,
+.product-page select,
+.product-page textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #172033;
+  font-size: 14px;
+  outline: none;
+  transition: 0.2s;
+}
+
+.product-page input:focus,
+.product-page select:focus,
+.product-page textarea:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.product-page textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+/* =========================
+   Buttons
+   ========================= */
+
+.product-page button {
+  border: none;
+  border-radius: 9px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.product-page button:hover {
+  transform: translateY(-1px);
+}
+
+.product-page button[type="submit"] {
+  background: #4f46e5;
+  color: white;
+}
+
+.product-page button[type="submit"]:hover {
+  background: #4338ca;
+}
+
+/* =========================
+   Product List
+   ========================= */
+
+.product-page section {
+  margin-top: 20px;
+}
+
+/* =========================
+   Product Card
+   ========================= */
+
+.product-page article {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+
+  padding: 18px;
+  margin-bottom: 16px;
+
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.05);
+
+  transition: 0.2s;
+}
+
+.product-page article:hover {
+  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.09);
+  transform: translateY(-2px);
+}
+
+/* =========================
+   Product Image
+   ========================= */
+
+.product-page img {
+  width: 180px;
+  height: 180px;
+
+  flex-shrink: 0;
+
+  border-radius: 12px;
+
+  object-fit: cover;
+
+  background: #f1f5f9;
+}
+
+/* =========================
+   Product Information
+   ========================= */
+
+.product-page article h2,
+.product-page article h3 {
+  margin: 0 0 8px;
+  color: #172033;
+}
+
+.product-page article p {
+  margin: 6px 0;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* =========================
+   Responsive
+   ========================= */
+
+@media (max-width: 768px) {
+  .product-page {
+    padding: 0 4px 40px;
+  }
+
+  .page-header h1 {
+    font-size: 25px;
+  }
+
+  .product-page form {
+    padding: 16px;
+    border-radius: 13px;
+  }
+
+  .product-page article {
+    padding: 14px;
+    gap: 14px;
+  }
+
+  .product-page img {
+    width: 140px;
+    height: 140px;
+  }
+}
+
+/* =========================
+   Mobile
+   ========================= */
+
+@media (max-width: 480px) {
+  .page-header h1 {
+    font-size: 22px;
+  }
+
+  .page-header p {
+    font-size: 13px;
+  }
+
+  .product-page input,
+  .product-page select,
+  .product-page textarea {
+    font-size: 13px;
+  }
+
+  .product-page article {
+    flex-direction: column;
+  }
+
+  .product-page img {
+    width: 100%;
+    max-width: 220px;
+    height: 180px;
+    margin: 0 auto;
+  }
+
+  .product-page button {
+    width: 100%;
+  }
 }
