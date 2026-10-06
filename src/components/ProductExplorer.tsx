@@ -16,6 +16,7 @@ type ProductSearchFormProps = {
   onSearch: (query: SearchQuery) => void | Promise<void>;
 };
 
+// ฟอร์มค้นหาสินค้า
 function ProductSearchForm({
   onSearch,
 }: ProductSearchFormProps) {
@@ -25,6 +26,7 @@ function ProductSearchForm({
   const [maxPrice, setMaxPrice] = useState("");
   const [minStock, setMinStock] = useState("");
 
+  // ส่งเงื่อนไขการค้นหา
   function handleSubmit(
     event: React.FormEvent<HTMLFormElement>
   ) {
@@ -142,21 +144,18 @@ function ProductSearchForm({
   );
 }
 
-// Props ที่ส่งให้ฟอร์มเพิ่ม/แก้ไขสินค้า
 type ProductFormProps = {
   editing: Product | null;
   onSave: (draft: ProductDraft) => void;
   onCancel: () => void;
 };
 
-// ฟอร์มสำหรับเพิ่มและแก้ไขสินค้า
+// ฟอร์มเพิ่มและแก้ไขสินค้า
 function ProductForm({
   editing,
   onSave,
   onCancel,
 }: ProductFormProps) {
-
-  // เก็บข้อมูลสินค้าที่กำลังกรอกในฟอร์ม
   const [draft, setDraft] = useState<ProductDraft>({
     title: "",
     price: 0,
@@ -168,7 +167,7 @@ function ProductForm({
     images: [],
   });
 
-  // ถ้าแก้ไขสินค้า จะแสดงข้อมูลเดิมในฟอร์ม
+  // โหลดข้อมูลเดิมเมื่อเลือกแก้ไข
   useEffect(() => {
     if (editing) {
       setDraft({
@@ -196,7 +195,7 @@ function ProductForm({
     });
   }, [editing]);
 
-  // อัปเดตค่าของแต่ละช่องในฟอร์ม
+  // อัปเดตข้อมูลในฟอร์ม
   function updateField<K extends keyof ProductDraft>(
     field: K,
     value: ProductDraft[K]
@@ -297,7 +296,6 @@ function ProductForm({
             </option>
             <option value="sunglasses">sunglasses</option>
             <option value="tablets">tablets</option>
-            <option value="mens-shirts">mens-shirts</option>
             <option value="vehicle">vehicle</option>
             <option value="womens-bags">womens-bags</option>
             <option value="womens-dresses">
@@ -372,23 +370,22 @@ function ProductForm({
   );
 }
 
-export default function ProductExplorer() {
+// รับสถานะ Login จากหน้าหลัก
+type ProductExplorerProps = {
+  isLoggedIn: boolean;
+};
 
-  // เก็บรายการสินค้าปัจจุบัน
+export default function ProductExplorer({
+  isLoggedIn,
+}: ProductExplorerProps) {
   const [products, setProducts] = useState<Product[]>([]);
-
-  // เก็บสถานะการโหลดข้อมูล
   const [status, setStatus] =
     useState<LoadState>("loading");
-
-  // เก็บข้อความเมื่อเกิดข้อผิดพลาด
   const [errorMessage, setErrorMessage] = useState("");
-
-  // เก็บสินค้าที่กำลังแก้ไข
   const [editingProduct, setEditingProduct] =
     useState<Product | null>(null);
 
-  // แสดงผลเมื่อโหลดข้อมูลสำเร็จ
+  // แสดงผลข้อมูลสินค้าที่โหลดสำเร็จ
   function showResult(list: ProductList) {
     setProducts(list.products);
     setStatus("ready");
@@ -399,7 +396,7 @@ export default function ProductExplorer() {
     console.log("ข้อมูลสินค้า", list.products);
   }
 
-  // แสดงข้อความเมื่อโหลดข้อมูลไม่สำเร็จ
+  // จัดการเมื่อโหลดข้อมูลไม่สำเร็จ
   function showError(error: unknown) {
     setErrorMessage(
       error instanceof Error
@@ -414,7 +411,7 @@ export default function ProductExplorer() {
     );
   }
 
-  // โหลดข้อมูลสินค้าเมื่อเปิดหน้า
+  // โหลดสินค้าเริ่มต้น
   useEffect(() => {
     fetchProducts(defaultQuery)
       .then(showResult)
@@ -471,8 +468,12 @@ export default function ProductExplorer() {
     }
   }
 
-  // เพิ่มสินค้าใหม่หรือบันทึกการแก้ไข
+  // เพิ่มหรือแก้ไขสินค้า
   function saveProduct(draft: ProductDraft) {
+    if (!isLoggedIn) {
+      return;
+    }
+
     if (editingProduct) {
       setProducts(
         products.map((product) =>
@@ -498,8 +499,12 @@ export default function ProductExplorer() {
     ]);
   }
 
-  // ลบสินค้าออกจากรายการ
+  // ลบสินค้า
   function removeProduct(id: number) {
+    if (!isLoggedIn) {
+      return;
+    }
+
     setProducts(
       products.filter(
         (product) => product.id !== id
@@ -515,18 +520,27 @@ export default function ProductExplorer() {
     <main className="product-page">
       <header className="page-header">
         <h1>รายการสินค้า</h1>
-        <p>ค้นหา เพิ่ม แก้ไข และลบสินค้า</p>
+
+        <p>
+          {isLoggedIn
+            ? "ค้นหา เพิ่ม แก้ไข และลบสินค้า"
+            : "ค้นหาสินค้า"}
+        </p>
       </header>
 
+      {/* ทุกคนสามารถค้นหาได้ */}
       <ProductSearchForm onSearch={loadProducts} />
 
-      <ProductForm
-        editing={editingProduct}
-        onSave={saveProduct}
-        onCancel={() =>
-          setEditingProduct(null)
-        }
-      />
+      {/* แสดงฟอร์มเฉพาะผู้ที่ Login */}
+      {isLoggedIn && (
+        <ProductForm
+          editing={editingProduct}
+          onSave={saveProduct}
+          onCancel={() =>
+            setEditingProduct(null)
+          }
+        />
+      )}
 
       <section aria-live="polite">
         {status === "loading" && (
@@ -555,7 +569,6 @@ export default function ProductExplorer() {
                 สินค้า {products.length} รายการ
               </h2>
 
-              {/* แสดงสินค้าเป็น Grid */}
               <div className="product-grid">
                 {products.map((item) => (
                   <article
@@ -596,25 +609,28 @@ export default function ProductExplorer() {
                         </p>
                       </div>
 
-                      <div className="product-actions">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setEditingProduct(item)
-                          }
-                        >
-                          แก้ไข
-                        </button>
+                      {/* ปุ่มแก้ไข/ลบเฉพาะตอน Login */}
+                      {isLoggedIn && (
+                        <div className="product-actions">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setEditingProduct(item)
+                            }
+                          >
+                            แก้ไข
+                          </button>
 
-                        <button
-                          type="button"
-                          onClick={() =>
-                            removeProduct(item.id)
-                          }
-                        >
-                          ลบ
-                        </button>
-                      </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              removeProduct(item.id)
+                            }
+                          >
+                            ลบ
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </article>
                 ))}

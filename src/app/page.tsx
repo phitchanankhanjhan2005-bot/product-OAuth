@@ -1,6 +1,11 @@
+import type { ReactElement } from "react";
 import { auth } from "../auth";
 import { AuthButtons } from "../components/auth-buttons";
 import ProductExplorer from "@/components/ProductExplorer";
+
+const ProductExplorerWithAuth = ProductExplorer as unknown as (props: {
+  isLoggedIn: boolean;
+}) => ReactElement;
 
 export default async function HomePage() {
   const session = await auth();
@@ -9,7 +14,6 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8">
-      {/* ส่วน OAuth */}
       <header className="mx-auto mb-8 flex max-w-7xl items-center justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">
@@ -27,8 +31,7 @@ export default async function HomePage() {
         />
       </header>
 
-      {/* ส่วน Project Explorer */}
-      <ProductExplorer />
+      <ProductExplorerWithAuth isLoggedIn={isLoggedIn} />
     </main>
   );
 }

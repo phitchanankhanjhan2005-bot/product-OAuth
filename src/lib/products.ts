@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+// -------------------- Demo Product --------------------
+
 type DemoProduct = {
   id: string;
   name: string;
@@ -28,6 +30,7 @@ const initialProducts: DemoProduct[] = [
   },
 ];
 
+// เก็บข้อมูล demo ไว้ใน global ตอน development
 declare global {
   // eslint-disable-next-line no-var
   var demoProducts: DemoProduct[] | undefined;
@@ -40,6 +43,7 @@ if (process.env.NODE_ENV !== "production") {
   globalThis.demoProducts = products;
 }
 
+// CRUD สำหรับข้อมูล demo
 export function getProducts() {
   return products;
 }
@@ -73,6 +77,10 @@ export function deleteProduct(id: string) {
   products.splice(index, 1);
 }
 
+
+// -------------------- Product Schema --------------------
+
+// รายการหมวดหมู่ที่ API รองรับ
 export const CATEGORIES = [
   "beauty",
   "fragrances",
@@ -100,45 +108,35 @@ export const CATEGORIES = [
   "womens-watches",
 ] as const;
 
+// กำหนดและตรวจสอบรูปแบบข้อมูล Product
 export const ProductSchema = z.object({
   id: z.number(),
-
   title: z.string().trim().min(1, "กรุณากรอกชื่อสินค้า"),
-
-  price: z
-    .number({ error: "กรุณากรอกราคา" })
-    .min(0, "ราคาต้องไม่ติดลบ"),
-
+  price: z.number({ error: "กรุณากรอกราคา" }).min(0, "ราคาต้องไม่ติดลบ"),
   stock: z
     .number({ error: "กรุณากรอกจำนวนคงเหลือ" })
     .int("จำนวนคงเหลือต้องเป็นจำนวนเต็ม")
     .min(0, "จำนวนคงเหลือต้องไม่ติดลบ"),
-
   category: z.enum(CATEGORIES, {
     error: "กรุณาเลือกหมวดหมู่",
   }),
-
   description: z.string().trim().optional(),
-
   brand: z.string().trim().optional(),
-
-  thumbnail: z
-    .string()
-    .trim()
-    .url("กรุณากรอก URL รูปภาพ")
-    .optional(),
-
-  images: z
-    .array(z.string().trim().url("กรุณากรอก URL รูปภาพ"))
-    .optional(),
+  thumbnail: z.string().trim().url("กรุณากรอก URL รูปภาพ").optional(),
+  images: z.array(z.string().trim().url("กรุณากรอก URL รูปภาพ")).optional(),
 });
 
+// Schema สำหรับข้อมูลที่ใช้สร้าง/แก้ไขสินค้า
 export const ProductDraftSchema = ProductSchema.omit({
   id: true,
 });
 
 export type ProductDraft = z.infer<typeof ProductDraftSchema>;
 
+
+// -------------------- Search --------------------
+
+// รูปแบบข้อมูลที่ API ส่งกลับมา
 export const ProductListSchema = z.object({
   products: z.array(ProductSchema),
   total: z.number(),
@@ -151,25 +149,21 @@ export type ProductList = z.infer<typeof ProductListSchema>;
 
 const API_BASE = "https://dummyjson.com";
 
+// field ที่ใช้เรียงสินค้า
 export const SORT_FIELDS = ["title", "price", "stock"] as const;
 
+// รูปแบบค่าที่ใช้ค้นหา/กรองสินค้า
 export const SearchQuerySchema = z.object({
   q: z.string().trim(),
-
   limit: z
     .number({ error: "กรุณากรอกจำนวนรายการ" })
-    .int("จำนวนรายการต้องเป็นจำนวนเต็ม")
-    .min(1, "อย่างน้อย 1 รายการ")
-    .max(30, "ไม่เกิน 30 รายการ"),
-
+    .int()
+    .min(1)
+    .max(30),
   sortBy: z.enum(SORT_FIELDS),
-
   category: z.string().optional(),
-
   minPrice: z.number().optional(),
-
   maxPrice: z.number().optional(),
-
   minStock: z.number().optional(),
 });
 
@@ -185,6 +179,8 @@ export const defaultQuery: SearchQuery = {
   minStock: undefined,
 };
 
+
+// สร้าง URL สำหรับเรียก API
 export function buildProductUrl(query: SearchQuery): string {
   const params = new URLSearchParams();
 
@@ -192,8 +188,6 @@ export function buildProductUrl(query: SearchQuery): string {
   params.set("limit", String(query.limit));
   params.set("sortBy", query.sortBy);
   params.set("order", "asc");
-
-  // เพิ่ม id เพราะ ProductSchema ต้องใช้ id
   params.set(
     "select",
     "id,title,price,stock,category,thumbnail,images"
@@ -202,12 +196,12 @@ export function buildProductUrl(query: SearchQuery): string {
   return `${API_BASE}/products/search?${params.toString()}`;
 }
 
+
+// เรียก API และตรวจสอบข้อมูลที่ได้ด้วย Zod
 export async function fetchProducts(
   query: SearchQuery
 ): Promise<ProductList> {
   const response = await fetch(buildProductUrl(query));
-
-  console.log("สถานะ", response);
 
   if (!response.ok) {
     throw new Error(
@@ -217,11 +211,8 @@ export async function fetchProducts(
 
   const data = await response.json();
 
-  console.log("ข้อมูลที่ได้รับจาก API", data);
-
+  // เช็กว่าข้อมูลจาก API ตรงตาม Schema หรือไม่
   const result = ProductListSchema.safeParse(data);
-
-  console.log("ผลการตรวจสอบข้อมูล", result);
 
   if (!result.success) {
     throw new Error(
